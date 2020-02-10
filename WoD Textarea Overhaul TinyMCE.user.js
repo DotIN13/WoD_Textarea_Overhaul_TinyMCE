@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WoD Textarea Overhaul TinyMCE
 // @namespace    github.com/DotIN13
-// @version      0.5
+// @version      0.6
 // @description  Refreshing WoD textareas with TinyMCE v5
 // @require      https://cdn.tiny.cloud/1/ywt4e8tywe5b6elzc8f93q7e89loo38uw7l9335movroj7be/tinymce/5/tinymce.min.js
 // @require      https://github.com/DotIN13/WoD_Textarea_Overhaul_TinyMCE/raw/master/zh_CN.js
@@ -19,16 +19,20 @@
 {
     'use strict';
 
-    //romove annoying WoD original resizer
-    /*new MutationObserver(function(mutations) {
-    if (document.getElementsByTagName('textarea')[0]) {
-        var seltextarea = document.getElementsByTagName('textarea')[0];
-        if (seltextarea) {
-            seltextarea.removeAttribute("onmouseover");
-            this.disconnect();// disconnect the observer
+    //sleep function for debug purposes
+    /*function sleep(milliseconds)
+    {
+        var start = new Date().getTime();
+        for (var i = 0; i < 1e7; i++)
+        {
+            if ((new Date().getTime() - start) > milliseconds)
+            {
+                break;
+            }
         }
-    }
-    }).observe(document, {childList: true, subtree: true});*/
+    }*/
+
+    //functions for romoving annoying WoD original resizer
     function removeResizeableDivMethod(divs)
     {
         var removeResizeableDiv;
@@ -39,6 +43,7 @@
                 for (var i = divs.length - 1; i >= 0; i--)
                 {
                     divs[i].parentNode.insertBefore(divs[i].lastChild, divs[i]);
+                    divs[i].remove();
                 }
             }
         }
@@ -64,6 +69,9 @@
         document.getElementsByClassName("gadget_fixed_container")[0].setAttribute("style", "position: fixed; left: 0px; top: 0px; width: 160px; z-index: 1;");
     }
 
+    //sleep(10000);
+
+    //init TinyMCE
     tinymce.init(
     {
         selector: 'textarea',
@@ -78,5 +86,6 @@
         link_title: false
     });
 
+    //remove WoD original resizer
     processRm(document.getElementsByClassName("resizeable default"))
 })();
