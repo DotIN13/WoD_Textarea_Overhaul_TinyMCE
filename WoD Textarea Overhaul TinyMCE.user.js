@@ -1,34 +1,58 @@
 // ==UserScript==
 // @name         WoD Textarea Overhaul TinyMCE
 // @namespace    github.com/DotIN13
-// @version      0.7
+// @version      1.0
 // @description  Refreshing WoD textareas with TinyMCE v5
-// @require      https://cdn.tiny.cloud/1/ywt4e8tywe5b6elzc8f93q7e89loo38uw7l9335movroj7be/tinymce/5/tinymce.min.js
-// @require      https://github.com/DotIN13/WoD_Textarea_Overhaul_TinyMCE/raw/master/zh_CN.js
 // @updateURL    https://github.com/DotIN13/WoD_Textarea_Overhaul_TinyMCE/raw/master/WoD%20Textarea%20Overhaul%20TinyMCE.user.js
 // @author       DotIN13
 // @match        http://canto.world-of-dungeons.org/wod/spiel/hero/profile.php?menukey=hero_profiles&session_hero_id=*
 // @match        http://canto.world-of-dungeons.org/wod/spiel/forum/*
 // @match        http://canto.world-of-dungeons.org/wod/spiel/dungeon/group.php*
 // @match        http://canto.world-of-dungeons.org/wod/spiel/pm*
+// @grant        GM_xmlhttpRequest
+// @connect      cdn.tiny.cloud
+// @connect      raw.githubusercontent.com
 // ==/UserScript==
 
-(function()
-{
+(function() {
     'use strict';
 
-    //sleep function for debug purposes
-    /*function sleep(milliseconds)
-    {
-        var start = new Date().getTime();
-        for (var i = 0; i < 1e7; i++)
-        {
-            if ((new Date().getTime() - start) > milliseconds)
-            {
-                break;
-            }
-        }
-    }*/
+    GM_xmlhttpRequest({
+        method: "GET",
+        url: "https://cdn.tiny.cloud/1/ywt4e8tywe5b6elzc8f93q7e89loo38uw7l9335movroj7be/tinymce/5/tinymce.min.js",
+        headers:{referer:"http://canto.world-of-dungeons.org/",origin:"http://canto.world-of-dungeons.org/"},
+        onload: function(response) {
+            let remoteScript = document.createElement('script');
+            remoteScript.id = 'tinymceScript';
+            remoteScript.innerHTML = response.responseText;
+            document.body.appendChild(remoteScript);
+            GM_xmlhttpRequest({
+                method:"GET",
+                url:"https://raw.githubusercontent.com/DotIN13/WoD_Textarea_Overhaul_TinyMCE/master/zh_CN.js",
+                onload: function(response){
+                    remoteScript = document.createElement("script");
+                    remoteScript.id = 'tinymce_cn';
+                    remoteScript.innerHTML = response.responseText;
+                    document.body.appendChild(remoteScript);
+                    tinymce.init(
+                        {
+                            selector: 'textarea',
+                            language: "zh_CN",
+                            plugins: "bbcode code autoresize charmap fullscreen searchreplace link image",
+                            bbcode_dialect: "punbb",
+                            image_dimensions: false,
+                            min_height: 300,
+                            min_width: 500,
+                            max_height: 600,
+                            content_css: "http://canto.world-of-dungeons.org/wod/css//skins/skin-1/skin-cn.css?1572386582",
+                            toolbar: 'undo redo | bold italic underline forecolor | charmap link image searchreplace code fullscreen',
+                            menubar: false,
+                            contextmenu: false,
+                            link_title: false
+                        });
+                }
+            });
+        }});
 
     //functions for romoving annoying WoD original resizer
     function removeResizeableDivMethod(divs)
@@ -70,24 +94,6 @@
     //delete forum commentbox excessive space
     var resizeDiv = document.getElementsByTagName("textarea");
     resizeDiv[0].parentElement.innerHTML = resizeDiv[0].parentElement.innerHTML.replace(/&nbsp;/,"");
-
-    //init TinyMCE
-    tinymce.init(
-    {
-        selector: 'textarea',
-        language: "zh_CN",
-        plugins: "bbcode code autoresize charmap fullscreen searchreplace link image",
-        bbcode_dialect: "punbb",
-        image_dimensions: false,
-        min_height: 300,
-        min_width: 500,
-        max_height: 600,
-        content_css: "http://canto.world-of-dungeons.org/wod/css//skins/skin-1/skin-cn.css?1572386582",
-        toolbar: 'undo redo | bold italic underline forecolor | charmap link image searchreplace code fullscreen',
-        menubar: false,
-        contextmenu: false,
-        link_title: false
-    });
 
     //remove WoD original resizer
     processRm(document.getElementsByClassName("resizeable default"));
