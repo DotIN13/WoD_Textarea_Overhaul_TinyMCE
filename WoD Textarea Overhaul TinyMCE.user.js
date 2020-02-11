@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WoD Textarea Overhaul TinyMCE
 // @namespace    github.com/DotIN13
-// @version      1.0
+// @version      1.2
 // @description  Refreshing WoD textareas with TinyMCE v5
 // @updateURL    https://github.com/DotIN13/WoD_Textarea_Overhaul_TinyMCE/raw/master/WoD%20Textarea%20Overhaul%20TinyMCE.user.js
 // @author       DotIN13
@@ -34,6 +34,22 @@
                     remoteScript.id = 'tinymce_cn';
                     remoteScript.innerHTML = response.responseText;
                     document.body.appendChild(remoteScript);
+
+                    //delete forum commentbox excessive space
+                    var textareaPost = document.getElementsByTagName("textarea");
+                    var URLtest = /forum/
+                    if(URLtest.test(document.URL))
+                    {
+                        if(textareaPost[0].parentElement.getAttribute("class") == "resizeable default")
+                        {
+                            textareaPost[0].parentElement.parentElement.innerHTML = textareaPost[0].parentElement.parentElement.innerHTML.replace(/&nbsp;/,"");
+                        }
+                        else
+                        {
+                            textareaPost[0].parentElement.innerHTML = textareaPost[0].parentElement.innerHTML.replace(/&nbsp;/,"");
+                        }
+                    }
+
                     tinymce.init(
                         {
                             selector: 'textarea',
@@ -45,56 +61,49 @@
                             min_width: 500,
                             max_height: 600,
                             content_css: "http://canto.world-of-dungeons.org/wod/css//skins/skin-1/skin-cn.css?1572386582",
-                            toolbar: 'undo redo | bold italic underline forecolor | charmap link image searchreplace code fullscreen',
+                            toolbar: 'undo redo | bold italic underline forecolor | image charmap link | searchreplace fullscreen code',
                             menubar: false,
                             contextmenu: false,
-                            link_title: false
+                            link_title: false,
+                            setup: function (editor) {
+                                editor.ui.registry.addContextToolbar('textselection', {
+                                    predicate: function (node) {
+                                        return !editor.selection.isCollapsed();
+                                    },
+                                    items: 'bold italic | forecolor',
+                                    position: 'selection',
+                                    scope: 'node'
+                                });
+                            }
                         });
+
+                    //remove original resizer
+                    removeResizeableDiv(document.getElementsByClassName("resizeable default"));
+
+                    //prevent the left collumn from covering the source code dialog
+                    if (document.getElementsByClassName("gadget_fixed_container")[0])
+                    {
+                        document.getElementsByClassName("gadget_fixed_container")[0].setAttribute("style", "position: fixed; left: 0px; top: 0px; width: 160px; z-index: 1;");
+                    }
                 }
             });
         }});
 
-    //functions for romoving annoying WoD original resizer
-    function removeResizeableDivMethod(divs)
+    //romove annoying WoD original resizer
+    function removeResizeableDiv(divs)
     {
-        var removeResizeableDiv;
-        if (divs.length != 0)
+        if (divs.length > 0)
         {
-            removeResizeableDiv = function()
+            for (var i = divs.length - 1; i >= 0; i--)
             {
-                for (var i = divs.length - 1; i >= 0; i--)
-                {
-                    divs[i].parentNode.insertBefore(divs[i].lastChild, divs[i]);
-                    divs[i].remove();
-                }
+                divs[i].parentNode.insertBefore(divs[i].lastChild, divs[i]);
+                divs[i].remove();
             }
         }
         else
         {
-            removeResizeableDiv = function()
-            {
-                return false;
-            }
+            return false;
         }
-        return removeResizeableDiv;
+        return false;
     }
-
-    function processRm(divs)
-    {
-        var method = removeResizeableDivMethod(divs);
-        method();
-    }
-
-    //prevent the left collumn from covering the source code dialog
-    if (document.getElementsByClassName("gadget_fixed_container")[0])
-    {
-        document.getElementsByClassName("gadget_fixed_container")[0].setAttribute("style", "position: fixed; left: 0px; top: 0px; width: 160px; z-index: 1;");
-    }
-
-    //delete forum commentbox excessive space
-    var resizeDiv = document.getElementsByTagName("textarea");
-    resizeDiv[0].parentElement.innerHTML = resizeDiv[0].parentElement.innerHTML.replace(/&nbsp;/,"");
-
-    //remove WoD original resizer
-    processRm(document.getElementsByClassName("resizeable default"));
 })();
