@@ -111,7 +111,6 @@
     {
         if (document.getElementById("req_message_ifr"))
         {
-            console.log("Gotit");
             var textareaPost = document.getElementsByTagName("textarea");
             var tinymceInner = document.getElementById("req_message_ifr").contentWindow.document.getElementById("tinymce");
             textareaPost[0].value = tinymceInner.firstChild.innerHTML;
